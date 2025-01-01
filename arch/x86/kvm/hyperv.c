@@ -2194,8 +2194,15 @@ static bool hv_check_hypercall_access(struct kvm_vcpu_hv *hv_vcpu, u16 code)
 int kvm_hv_hypercall(struct kvm_vcpu *vcpu)
 {
 	struct kvm_vcpu_hv *hv_vcpu = to_hv_vcpu(vcpu);
-	struct kvm_hv_hcall hc;
+	/*
+	 * Quick hack to avoid stack size build failure: use static, and memset
+	 * to zero. This is not thread-safe! The proper fix is to allocate and
+	 * free, instead.
+	 */
+	static struct kvm_hv_hcall hc;
 	u64 ret = HV_STATUS_SUCCESS;
+
+	memset(&hc, 0, sizeof(hc));
 
 	/*
 	 * hypercall generates UD from non zero cpl and real mode
